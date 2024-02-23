@@ -10,6 +10,10 @@ tokenizer = re.compile(r'\W+')
 num_documents_processed = 0
 total_terms_parsed = 0
 unique_terms_added = 0
+stop_words_count = 0
+
+# Define the list of stop words
+stop_words = ["and", "the", "is", "in", "of", ...]  # Add more stop words as needed
 
 # Initialize the inverted index
 inverted_index = {}
@@ -19,11 +23,12 @@ def tokenize_document(document):
     global total_terms_parsed
     tokens = tokenizer.split(document.lower())
     total_terms_parsed += len(tokens)
-    return tokens
+    filtered_tokens = [token for token in tokens if token not in stop_words]  # Filter out stop words
+    return filtered_tokens
 
 # Function to build the inverted index
 def build_index(documents_folder):
-    global num_documents_processed, unique_terms_added
+    global num_documents_processed, unique_terms_added, stop_words_count
     for root, dirs, files in os.walk(documents_folder):
         for file in files:
             filepath = os.path.join(root, file)
@@ -36,6 +41,7 @@ def build_index(documents_folder):
                         unique_terms_added += 1
                     inverted_index[token].add(filepath)
                 num_documents_processed += 1
+                stop_words_count += len([token for token in tokens if token in stop_words])  # Count stop words in document
 
 # Function to save index and documents data to files
 def save_data(index_filename, documents_filename):
@@ -46,6 +52,7 @@ def save_data(index_filename, documents_filename):
         f.write(f"Number of documents processed: {num_documents_processed}\n")
         f.write(f"Total number of terms parsed: {total_terms_parsed}\n")
         f.write(f"Total number of unique terms added to the index: {unique_terms_added}\n")
+        f.write(f"Total number of terms found that matched one of the stop words: {stop_words_count}\n")
 
 # Main function
 def main():

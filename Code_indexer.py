@@ -1,7 +1,7 @@
 import os
 import re
 import pickle
-import time
+import math
 
 # Define the regular expression for tokenization
 tokenizer = re.compile(r'\W+')
@@ -26,7 +26,6 @@ def tokenize_document(document):
     filtered_tokens = [token for token in tokens if token not in stop_words]  # Filter out stop words
     return filtered_tokens
 
-# Function to build the inverted index
 def build_index(documents_folder):
     global num_documents_processed, unique_terms_added, stop_words_count
     for root, dirs, files in os.walk(documents_folder):
@@ -37,9 +36,12 @@ def build_index(documents_folder):
                 tokens = tokenize_document(document)
                 for token in tokens:
                     if token not in inverted_index:
-                        inverted_index[token] = set()
+                        inverted_index[token] = {}
                         unique_terms_added += 1
-                    inverted_index[token].add(filepath)
+                    # Increment term frequency for the document
+                    if filepath not in inverted_index[token]:
+                        inverted_index[token][filepath] = 0  # Initialize the term frequency if not exists
+                    inverted_index[token][filepath] += 1  # Increment term frequency for the document
                 num_documents_processed += 1
                 stop_words_count += len([token for token in tokens if token in stop_words])  # Count stop words in document
 
@@ -53,15 +55,3 @@ def save_data(index_filename, documents_filename):
         f.write(f"Total number of terms parsed: {total_terms_parsed}\n")
         f.write(f"Total number of unique terms added to the index: {unique_terms_added}\n")
         f.write(f"Total number of terms found that matched one of the stop words: {stop_words_count}\n")
-
-# Main function
-def main():
-    start_time = time.time()
-    documents_folder = r"C:\Users\MOJISOLA EMMANUEL\Downloads\cacm"  # Update this with the path to your documents folder
-    build_index(documents_folder)
-    save_data("index.dat", "documents.dat")
-    end_time = time.time()
-    print(f"Indexing completed in {end_time - start_time} seconds.")
-
-if __name__ == "__main__":
-    main()
